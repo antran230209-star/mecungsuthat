@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>💀 Secret Challenge 💀</title>
+
+<style>
+body {
+    background: black;
+    color: #00ffcc;
+    text-align: center;
+    font-family: monospace;
+}
+
+canvas {
+    border: 2px solid #00ffcc;
+    margin-top: 20px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2> MEMAYBEO</h2>
+<button onclick="startGame()">START</button>
+
+<canvas id="game" width="400" height="200"></canvas>
+<h3 id="status"></h3>
+
+<div id="final" style="display:none;">
+    <h2>🗿 ACCESS GRANTED</h2>
+    <img src="final.jpeg" width="300">
+    <br><br>
+    <button onclick="startGame()">REPLAY</button>
+</div>
+
+<script>
+let canvas = document.getElementById("game");
+let ctx = canvas.getContext("2d");
+
+let score = 0;
+let hp = 3;
+let running = false;
+let spawnTimer = 0;
+
+let dinoY = 150;
+let vel = 0;
+let obstacles = [];
+
+document.addEventListener("keydown", e=>{
+    if(e.code==="Space" && running){
+        vel = -10;
+    }
+});
+
+function startGame(){
+    score = 0;
+    hp = 3;
+    running = true;
+    obstacles = [];
+    loop();
+}
+
+function spawn(){
+    obstacles.push({x:400, h:20+Math.random()*50});
+}
+
+function loop(){
+    if(!running) return;
+
+    ctx.clearRect(0,0,400,200);
+
+    // ===== FIX MÀU =====
+    ctx.fillStyle = "#00ffcc";
+
+    // ===== GRAVITY =====
+    vel += 0.6;
+    dinoY += vel;
+
+    if(dinoY > 150){
+        dinoY = 150;
+        vel = 0;
+    }
+
+    // ===== SPAWN TIMER =====
+    spawnTimer++;
+
+    if (spawnTimer > 90){
+        spawn();
+        spawnTimer = 0;
+    }
+
+    // ===== VẼ DINO =====
+    ctx.fillRect(50, dinoY, 20, 20);
+
+    // ===== OBSTACLE =====
+    obstacles.forEach((o, i)=>{
+        o.x -= 3.5;
+
+        ctx.fillRect(o.x, 180 - o.h, 10, o.h);
+
+        // COLLISION
+        if(50 < o.x+10 && 70 > o.x && dinoY+20 > 180-o.h){
+            hp--;
+            obstacles.splice(i,1);
+
+            if(hp <= 0){
+                running = false;
+                document.getElementById("status").innerText = "💀 YOU DIED";
+                return;
+            }
+        }
+
+        if(o.x < -10){
+            obstacles.splice(i,1);
+            score++;
+        }
+    });
+
+    document.getElementById("status").innerText =
+        "Score: " + score + " | HP: " + hp;
+
+    requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
