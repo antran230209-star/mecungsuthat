@@ -53,8 +53,9 @@ let vel = 0;
 let obstacles = [];
 
 document.addEventListener("keydown", e=>{
-    if(e.code==="Space" && running){
-        vel = -10;
+    if(e.code === "Space" && dinoY >= 150){
+    vel = -10;
+}
     }
 });
 
