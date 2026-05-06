@@ -2,132 +2,140 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>💀 Secret Challenge 💀</title>
+<title>💀 SECRET MAZE 💀</title>
 
 <style>
-body {
-    background: black;
-    color: #00ffcc;
-    text-align: center;
-    font-family: monospace;
+body{
+    background:black;
+    color:#00ffcc;
+    text-align:center;
+    font-family:monospace;
 }
-
-canvas {
-    border: 2px solid #00ffcc;
-    margin-top: 20px;
+canvas{
+    border:2px solid #00ffcc;
+    margin-top:20px;
 }
-
-button {
-    margin-top: 20px;
-    padding: 10px;
+button{
+    padding:10px;
+    margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<h2> MEMAYBEO</h2>
+<h2>💀 ME MAY BEO 💀</h2>
 <button onclick="startGame()">START</button>
 
-<canvas id="game" width="400" height="200"></canvas>
+<canvas id="game" width="400" height="400"></canvas>
 <h3 id="status"></h3>
 
 <div id="final" style="display:none;">
     <h2>🗿 ACCESS GRANTED</h2>
-    <img src="final.jpeg" width="300">
-    <br><br>
-    <button onclick="startGame()">REPLAY</button>
+    <img src="final.jpg" width="300">
 </div>
 
 <script>
 let canvas = document.getElementById("game");
 let ctx = canvas.getContext("2d");
 
-let score = 0;
-let hp = 3;
-let running = false;
-let spawnTimer = 0;
+let level = 1;
+let player;
 
-let dinoY = 150;
-let vel = 0;
-let obstacles = [];
+// ===== MAZE 1 =====
+let maze1 = [
+[1,1,1,1,1],
+[1,0,0,0,1],
+[1,0,1,0,1],
+[1,0,0,0,1],
+[1,1,1,1,1]
+];
 
-document.addEventListener("keydown", e=>{
-    if(e.code === "Space" && dinoY >= 150){
-    vel = -10;
-}
-    }
-});
+// ===== MAZE 2 (KHÓ HƠN) =====
+let maze2 = [
+[1,1,1,1,1,1,1],
+[1,0,0,0,1,0,1],
+[1,0,1,0,1,0,1],
+[1,0,1,0,0,0,1],
+[1,0,0,1,1,0,1],
+[1,1,0,0,0,0,1],
+[1,1,1,1,1,1,1]
+];
 
+let maze;
+
+// ===== START =====
 function startGame(){
-    score = 0;
-    hp = 3;
-    running = true;
-    obstacles = [];
-    loop();
+    level = 1;
+    document.getElementById("final").style.display="none";
+    loadLevel();
 }
 
-function spawn(){
-    obstacles.push({x:400, h:20+Math.random()*50});
+// ===== LOAD LEVEL =====
+function loadLevel(){
+    if(level === 1){
+        maze = maze1;
+        player = {x:1,y:1};
+        document.getElementById("status").innerText="Màn 1";
+    }
+    else if(level === 2){
+        maze = maze2;
+        player = {x:1,y:1};
+        document.getElementById("status").innerText="Màn 2";
+    }
+    drawMaze();
 }
 
-function loop(){
-    if(!running) return;
+// ===== DRAW =====
+function drawMaze(){
+    ctx.clearRect(0,0,400,400);
 
-    ctx.clearRect(0,0,400,200);
+    let size = 400 / maze.length;
 
-    // ===== FIX MÀU =====
-    ctx.fillStyle = "#00ffcc";
-
-    // ===== GRAVITY =====
-    vel += 0.6;
-    dinoY += vel;
-
-    if(dinoY > 150){
-        dinoY = 150;
-        vel = 0;
-    }
-
-    // ===== SPAWN TIMER =====
-    spawnTimer++;
-
-    if (spawnTimer > 90){
-        spawn();
-        spawnTimer = 0;
-    }
-
-    // ===== VẼ DINO =====
-    ctx.fillRect(50, dinoY, 20, 20);
-
-    // ===== OBSTACLE =====
-    obstacles.forEach((o, i)=>{
-        o.x -= 3.5;
-
-        ctx.fillRect(o.x, 180 - o.h, 10, o.h);
-
-        // COLLISION
-        if(50 < o.x+10 && 70 > o.x && dinoY+20 > 180-o.h){
-            hp--;
-            obstacles.splice(i,1);
-
-            if(hp <= 0){
-                running = false;
-                document.getElementById("status").innerText = "💀 YOU DIED";
-                return;
+    for(let y=0;y<maze.length;y++){
+        for(let x=0;x<maze[y].length;x++){
+            if(maze[y][x] === 1){
+                ctx.fillStyle = "#00ffcc";
+                ctx.fillRect(x*size, y*size, size, size);
             }
         }
+    }
 
-        if(o.x < -10){
-            obstacles.splice(i,1);
-            score++;
-        }
-    });
-
-    document.getElementById("status").innerText =
-        "Score: " + score + " | HP: " + hp;
-
-    requestAnimationFrame(loop);
+    // player
+    ctx.fillStyle = "red";
+    ctx.fillRect(player.x*size, player.y*size, size, size);
 }
+
+// ===== MOVE =====
+document.addEventListener("keydown", e=>{
+    if(!maze) return;
+
+    let nx = player.x;
+    let ny = player.y;
+
+    if(e.key==="w") ny--;
+    if(e.key==="s") ny++;
+    if(e.key==="a") nx--;
+    if(e.key==="d") nx++;
+
+    if(maze[ny][nx] === 0){
+        player.x = nx;
+        player.y = ny;
+    }
+
+    drawMaze();
+
+    // ===== WIN =====
+    if(player.x === maze[0].length-2 && player.y === maze.length-2){
+        if(level === 1){
+            level = 2;
+            loadLevel();
+        } else {
+            document.getElementById("final").style.display="block";
+            document.getElementById("status").innerText="HOÀN THÀNH 🗿";
+        }
+    }
+});
 </script>
 
 </body>
